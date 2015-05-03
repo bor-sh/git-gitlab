@@ -30,8 +30,14 @@ git gitlab -h
 
 ### Merge request
 
+In general only a user name is enough. Everything else will be derived from repository itself.
+If a user name is found or similar to the provided input then we can select it from list.
+
 ~~~
 git gitlab mr -h
+
+git gitlab mr username
 ~~~
+
 
 
