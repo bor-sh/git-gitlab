@@ -65,6 +65,9 @@ class GitlabClient(object):
     for idx, user in enumerate(result):
       print "%i: %s" % (idx, user['username'])
       users.update({idx:user['id']})
+    if not users:
+       raise ValueError("No user found")
+
     select = raw_input("Please select user: ")  
     try: 
       user = users[int(select)]
@@ -170,21 +173,21 @@ def mr(assignee,
   repo_client = GitRepoClient()
   url         = repo_client.get_config_gitlab_url()
   token       = repo_client.get_config_gitlab_token()
+
   if not reponame:
     reponame  = repo_client.get_reponame()
-
   if not source:
     source    = repo_client.get_current_branch()
   if title == "":
     title = source
 
-  repo_client.push_branch(source)  
-
   gitlab_client = GitlabClient(url, token)
-  project_id    = gitlab_client.get_projects_id(reponame)
   assignee_id   = gitlab_client.check_user_id(assignee)
+  project_id    = gitlab_client.get_projects_id(reponame)
   if forkedname:
     forked_id   = gitlab_client.get_projects_id(forkedname)
+
+  repo_client.push_branch(source)
 
   gitlab_client.create_mergerequest(project_id, source, into, title, forked_id, assignee_id)
 
