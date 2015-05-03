@@ -8,6 +8,18 @@ Simple git extension to raise merge request on GitLab from command line.
 sudo python setup.sh install
 ~~~
 
+## Configuration
+
+~~~
+global:
+git config --global gitlab.url    "http://your-server-url"
+git config --global gitlab.token  "your-token"
+
+local in each repository:
+git config gitlab.url   "http://your-server-url"
+git config gitlab.token "your-token"
+~~~
+
 ## Usage
 
 ### All commands
