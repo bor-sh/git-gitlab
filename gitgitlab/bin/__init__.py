@@ -99,11 +99,7 @@ class GitRepoClient(object):
       remotes = self.repo.remotes
       # take only first should be enough we are only interested in the name
       try:
-        url            = remotes[0].url
-        filteredremote = url.replace("git@","").replace("https://","").replace("http://","")
-        reponame       = filteredremote.split(":")[1]
-        print "Repository name ", reponame
-        return reponame
+        return self.extract_reponame(remotes[0].url)
       except Exception:
         raise ValueError("No remote provided")
 
@@ -156,6 +152,27 @@ class GitRepoClient(object):
           raise ValueError("No configuration provided")
 
       return entry
+
+  def extract_reponame(self, url):
+      """
+      Extract repo name from remote url address
+      """
+      url,splitted = self.__get_split(url, "://")
+      url,splitted = self.__get_split(url, "@")
+      url,splitted = self.__get_split(url, ":")
+      if not splitted:
+        url, splitted = self.__get_split(url, "/")
+
+      reponame = url
+      return reponame
+
+  def __get_split(self, string, pattern):
+      splitted = False
+      split = string.split(pattern)
+      if len(split) > 1:
+        splitted = True
+        string = '/'.join(split[1:])
+      return string, splitted
 
 @command()
 def mr(assignee, 
