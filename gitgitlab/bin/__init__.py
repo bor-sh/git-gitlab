@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import signal
 import argparse
 import gitlab
 import ConfigParser
@@ -22,7 +23,8 @@ if sys.version_info[:2] < (2, 5):     # python 2.4 compatiblity
 class GitlabClient(object):
   def __init__(self, url, token):
     try:
-      self.git = gitlab.Gitlab(url, token)
+      self.git    = gitlab.Gitlab(url, token)
+      self.helper = Helper()
     except Exception, e:
       raise ValueError("Gitlab could not be initialized - check connection or configuration")
 
@@ -32,47 +34,28 @@ class GitlabClient(object):
     :param reponame - repo name path namespace/repo.git
     :return project id to given repo name
     """
-    projects = []
-    project_id = None
+    filterby  = 'http_url_to_repo'
+    projects  = []
     i = 1
     while True:
        page = self.git.getprojects(i, 100)
        if page:
-        projects += page
-        i += 1
+         projects += self.helper.filter_list_by_entry(reponame, page, filterby)
+         i += 1
        else:
-        break
-    for project in projects:
-       if reponame in project['http_url_to_repo']:
-         print "Project %s with ID:%i" % (project['http_url_to_repo'], project['id'])
-         project_id = project['id']
          break
-    if project_id == None:
-      raise ValueError("No project id found")
+    return self.helper.get_entry(projects, filterby)
 
-    return project_id
-
-  def create_mergerequest(self, project_id, source, target, title, assignee_id, target_project_id = None):
-    res = self.git.createmergerequest(project_id, source, target, title, target_project_id, assignee_id)
+  def create_mergerequest(self, project_id, source, target, title, description = None, assignee_id = None, target_project_id = None):
+    res = self.git.createmergerequest(project_id, source, target, title, target_project_id, int(assignee_id), description)
     if res:
       print "Merge request created"
     else:
       print "Merge request seems to be already present"
 
-  def check_user_id(self, name):
-    users = {}
+  def get_user_id(self, name):
     result = self.git.getusers(name,1,100)
-    for idx, user in enumerate(result):
-      print "%i: %s" % (idx, user['username'])
-      users.update({idx:user['id']})
-    if not users:
-       raise ValueError("No user found")
-
-    select = raw_input("Please select user: ")  
-    try: 
-      user = users[int(select)]
-    except:
-      raise ValueError("Wrong user selection")
+    return self.helper.get_entry(result, 'username')
 
 class GitRepoClient(object):
   def __init__(self):
@@ -174,13 +157,52 @@ class GitRepoClient(object):
         string = '/'.join(split[1:])
       return string, splitted
 
+class Helper(object):
+  def __init__(self):
+    self.name = "helper"
+
+  def get_entry(self, entries, selection, identity = 'id'):
+    """
+    Get entry
+    :param entries
+    :param selection
+    :param identity
+    """
+    dictionary = {}
+    for idx, entry in enumerate(entries):
+      print "%i: %s" % (idx, entry[selection])
+      dictionary.update({idx:entry[identity]})
+    select = 0
+    if len(dictionary) > 1:
+      select = raw_input("Please select [number]:")
+    else:
+      print "One entry found and will be selected", entries[0][selection]
+    try: 
+      return dictionary[int(select)]
+    except:
+      raise ValueError("Wrong selection")
+
+  def filter_list_by_entry(self, entry, collection, selection):
+    """
+    Filter list by entry
+    :param entries
+    :param selection
+    :param identity
+    """
+    result_list = []
+    for name in collection:
+      if entry in name[selection]:
+        result_list.append(name)
+    return result_list
+
 @command()
 def mr(assignee, 
        title=("t", "", "title provided or derived from branch name"), 
        source=("s",  "", "branch to merge provided or current active branch is taken"), 
        reponame=('r', "", "repository name with namespace/repo.git or derived from remote settings if cloned"), 
        into=('i', "master", "target branch"), 
-       forkedname=('f', "", "forked project name")):
+       forkedname=('f', "", "forked project name"),
+       description=('d', "", "description of the merge request")):
   """
   Create merge request
   assignee - search for user which merge request should be assigned to
@@ -199,20 +221,25 @@ def mr(assignee,
     title = source
 
   gitlab_client = GitlabClient(url, token)
-  assignee_id   = gitlab_client.check_user_id(assignee)
+  assignee_id   = gitlab_client.get_user_id(assignee)
   project_id    = gitlab_client.get_projects_id(reponame)
   if forkedname:
     forked_id   = gitlab_client.get_projects_id(forkedname)
 
   repo_client.push_branch(source)
 
-  gitlab_client.create_mergerequest(project_id, source, into, title, forked_id, assignee_id)
+  gitlab_client.create_mergerequest(project_id, source, into, title, description, assignee_id, forked_id)
 
 def main():
+    signal.signal(signal.SIGINT, handler)
     try:
         dispatch()
     except Exception, e:
         sys.exit(e)
- 
+
+def handler(signum, frame):
+    print "Exiting ..."
+    sys.exit(0)
+
 if __name__ == '__main__':
   main()
