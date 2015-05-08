@@ -8,6 +8,14 @@ Simple git extension to raise merge request on GitLab from command line.
 sudo python setup.sh install
 ~~~
 
+Lates pyapi-gitlab is required: https://github.com/Itxaka/pyapi-gitlab
+
+Probably it needs to be installed manually:
+~~~
+git clone https://github.com/Itxaka/pyapi-gitlab.git
+sudo python setup install
+~~~
+
 ## Configuration
 
 ~~~
@@ -38,6 +46,3 @@ git gitlab mr -h
 
 git gitlab mr username
 ~~~
-
-
-
