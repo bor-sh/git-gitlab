@@ -5,6 +5,31 @@ import mock
 from bin import GitRepoClient 
 from bin import Helper 
 
+def apicall(func, *args, **kwargs):
+  return func(*args,**kwargs)
+
+def test_func(par1, par2, par3, **kwargs):
+  return par1 + " " + par2 + " " + par3 + " " +kwargs['test']
+
+def pages_func(project_id, count, *args, **kwargs):
+  if count == 1:
+    page = json.loads(json.dumps([
+    {
+      "id": 4,
+      "http_url_to_repo": "http://example.com/diaspora/diaspora-client.git",
+    },
+    {
+      "id": 6,
+      "http_url_to_repo": "http://example.com/brightbox/puppet.git",
+    },
+    {
+      "id": 8,
+      "http_url_to_repo": "http://example.com/birghtbox/puppet",
+    }
+    ]))
+    return page
+  return None
+
 class TestGitRepoClient(unittest.TestCase):
     """ Test class for GitRepoClient"""
 
@@ -120,6 +145,28 @@ class TestGitlabClient(unittest.TestCase):
         reponame = "http://example.com/diaspora/diasporasdfadf.git"
         filtered = self.help.filter_list_by_entry(reponame, projects, 'http_url_to_repo')
         self.assertEquals(len(filtered), 0)
+
+    def test_apicall(self):
+        print "Test apicall"
+        text = apicall(test_func, "fsk", "lks", "slkdfj", test="lkjsf")
+        self.assertEquals(text, "fsk lks slkdfj lkjsf")
+
+    def test_get_filtered_pages_lists(self):
+        print "Test get_filtered_pages_lists"
+        i = [1]
+        pages = self.help.get_filtered_pages_lists(pages_func, 1, "puppet", "http_url_to_repo", i)
+        self.assertEquals(pages[0]['id'], 6)
+
+    def test_get_state_event(self):
+        print "Test get state event"
+        with mock.patch('__builtin__.raw_input', return_value='0'):
+            assert self.help.get_state_event() == "close"
+        with mock.patch('__builtin__.raw_input', return_value='1'):
+            assert self.help.get_state_event() == "reopen"
+        with mock.patch('__builtin__.raw_input', return_value='2'):
+            assert self.help.get_state_event() == "merge"
+        with mock.patch('__builtin__.raw_input', return_value='3'):
+            self.assertRaises(ValueError)
 
 if __name__ == '__main__':
     unittest.main()

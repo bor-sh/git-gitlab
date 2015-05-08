@@ -28,6 +28,9 @@ class GitlabClient(object):
     except Exception, e:
       raise ValueError("Gitlab could not be initialized - check connection or configuration")
 
+  def api(self):
+    return self.git
+
   def get_projects_id(self, reponame):
     """
     Get gitlab project id
@@ -203,6 +206,22 @@ class Helper(object):
     except:
       raise ValueError("Wrong selection")
 
+  def get_state_event(self):
+    # actually seems like "merge" does not have any effect
+    # will use it to trigger the merge request
+    events = [
+        {
+          "event": "close",
+        },
+        {
+          "event": "reopen",
+        },
+        {
+          "event": "merge",
+        }
+        ]
+    return self.get_entry(events, "event", "event")
+
   def filter_list_by_entry(self, entry, collection, selection):
     """
     Filter list by entry
@@ -215,6 +234,32 @@ class Helper(object):
       if entry in name[selection]:
         result_list.append(name)
     return result_list
+
+  def get_filtered_pages_lists(self, func, project_id, filtername, filterby, *args, **kwargs):
+    """
+    Get filtered pages based on func call
+    :param project_id
+    :param func        
+    :param filtername  
+    :param filterby
+    :return filtered pages
+    """
+    pages              = []
+    i = 1
+    while True:
+       page = func(project_id, i, *args, **kwargs)
+       if page:
+         pages += self.filter_list_by_entry(filtername, page, filterby)
+         i += 1
+       else:
+         break
+    return pages
+
+repo_client   = GitRepoClient()
+url           = repo_client.get_config_gitlab_url()
+token         = repo_client.get_config_gitlab_token()
+gitlab_client = GitlabClient(url, token)
+helper        = Helper()
 
 @command()
 def mr(assignee, 
@@ -230,10 +275,6 @@ def mr(assignee,
   """
   forked_id  = None
 
-  repo_client = GitRepoClient()
-  url         = repo_client.get_config_gitlab_url()
-  token       = repo_client.get_config_gitlab_token()
-
   if not reponame:
     reponame  = repo_client.get_reponame()
   if not source:
@@ -241,7 +282,6 @@ def mr(assignee,
   if title == "":
     title = source
 
-  gitlab_client = GitlabClient(url, token)
   assignee_id   = gitlab_client.get_user_id(assignee)
   project_id    = gitlab_client.get_projects_id(reponame)
   if forkedname:
@@ -251,12 +291,63 @@ def mr(assignee,
 
   gitlab_client.create_mergerequest(project_id, source, into, title, description, assignee_id, forked_id)
 
+@command()
+def upmr(assignee=("a", "", "Assignee user ID"),
+         current_state=('c', "opened", "Return all requests or just those that are merged, opened or closed"),
+         description=('d', "", "description of the merge request"),
+         state_change=('e', "", "New state (close|reopen|merge) change [yes] everythin else will be ignored - merge will accept the request"),
+         filter_title=('f', "", "Filter list by title"),
+         into=('i', "master", "target branch"),
+         commit_message=("m", "", "commit message if accepting merge request"),
+         reponame=('r', "", "repository name with namespace/repo.git or derived from remote settings if cloned"),
+         source=("s",  "", "branch to merge provided or current active branch is taken"),
+         title=("t", "", "title update"),
+         ):
+  """
+  Update merge request
+  """
+
+  if not reponame:
+    reponame  = repo_client.get_reponame()
+
+  project_id  = gitlab_client.get_projects_id(reponame)
+
+  filterby   = "title"
+  merge_list = helper.get_filtered_pages_lists(gitlab_client.api().getmergerequests, project_id, filter_title, filterby, current_state)
+  merge_id   = helper.get_entry(merge_list, filterby)
+
+  data = {}
+  state_event = None
+  if assignee:
+    assignee_id   = gitlab_client.get_user_id(assignee)
+    data.update( {"assignee_id":assignee_id} )
+  if description:
+    data.update( {"description":description} )
+  if state_change == "yes":
+    state_event = helper.get_state_event()
+    data.update( {"state_event": state_event} )
+  if into:
+    data.update( {"target_branch":into} )
+  if source:
+    data.update( {"source_branch":source} )
+  if title:
+    data.update( {"title":title} )
+
+  gitlab_client.api().updatemergerequest(project_id, merge_id, **data)
+
+  if state_event == "merge":
+    result = gitlab_client.api().acceptmergerequest(project_id, merge_id, commit_message)
+    if result:
+      print "Merge was OK"
+    else:
+      print "Merge failed"
+      
 def main():
     signal.signal(signal.SIGINT, handler)
     try:
-        dispatch()
+      dispatch()
     except Exception, e:
-        sys.exit(e)
+      sys.exit(e)
 
 def handler(signum, frame):
     print "\nExiting ..."
