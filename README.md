@@ -13,7 +13,7 @@ Lates pyapi-gitlab is required: https://github.com/Itxaka/pyapi-gitlab
 Probably it needs to be installed manually:
 ~~~
 git clone https://github.com/Itxaka/pyapi-gitlab.git
-sudo python setup install
+sudo python setup.sh install
 ~~~
 
 ## Configuration
