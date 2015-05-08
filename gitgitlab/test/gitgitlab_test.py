@@ -85,8 +85,41 @@ class TestGitlabClient(unittest.TestCase):
 
         reponame = "http://example.com/diaspora/diaspora-client.git"
         filtered = self.help.filter_list_by_entry(reponame, projects, 'http_url_to_repo')
-        self.assertEquals(len(filtered), 1)    
+        self.assertEquals(len(filtered), 1)
         self.assertEquals(filtered[0]['http_url_to_repo'], reponame)    
+
+        projects = json.loads(json.dumps([
+          {
+            "id": 4,
+            "http_url_to_repo": "http://example.com/diaspora/diaspora-client.git",
+          },
+          {
+            "id": 6,
+            "http_url_to_repo": "http://example.com/diaspora/diaspora",
+          },
+          {
+            "id": 8,
+            "http_url_to_repo": "http://example.com/diaspora/diaspora-client",
+          },
+          {
+            "id": 10,
+            "http_url_to_repo": "http://example.com/diaspora/diaspora.git",
+          }
+          ]))
+
+        reponame = "http://example.com/diaspora/diaspora"
+        filtered = self.help.filter_list_by_entry(reponame, projects, 'http_url_to_repo')
+        self.assertEquals(len(filtered), 4)
+        self.assertEquals(filtered[0]['http_url_to_repo'], "http://example.com/diaspora/diaspora-client.git")    
+
+        reponame = "http://example.com/diaspora/diaspora.git"
+        filtered = self.help.filter_list_by_entry(reponame, projects, 'http_url_to_repo')
+        self.assertEquals(len(filtered), 1)
+        self.assertEquals(filtered[0]['http_url_to_repo'], reponame)
+
+        reponame = "http://example.com/diaspora/diasporasdfadf.git"
+        filtered = self.help.filter_list_by_entry(reponame, projects, 'http_url_to_repo')
+        self.assertEquals(len(filtered), 0)
 
 if __name__ == '__main__':
     unittest.main()

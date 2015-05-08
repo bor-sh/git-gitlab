@@ -34,16 +34,12 @@ class GitlabClient(object):
     :param reponame - repo name path namespace/repo.git
     :return project id to given repo name
     """
-    filterby  = 'http_url_to_repo'
-    projects  = []
-    i = 1
-    while True:
-       page = self.git.getprojects(i, 100)
-       if page:
-         projects += self.helper.filter_list_by_entry(reponame, page, filterby)
-         i += 1
-       else:
-         break
+    filterby = 'http_url_to_repo'
+    projects, projects_alternative = self.__get_filtered_project_lists(reponame)
+    if len(projects_alternative) == 1:
+      print "One project found which is matching with appended .git", projects_alternative[0][filterby]
+      return projects_alternative[0]['id']
+
     return self.helper.get_entry(projects, filterby)
 
   def create_mergerequest(self, project_id, source, target, title, description = None, assignee_id = None, target_project_id = None):
@@ -56,6 +52,28 @@ class GitlabClient(object):
   def get_user_id(self, name):
     result = self.git.getusers(name,1,100)
     return self.helper.get_entry(result, 'username')
+
+
+  def __get_filtered_project_lists(self, reponame, filterby = 'http_url_to_repo'):
+    """
+    Get filtered project lists
+    :param reponame - repo name path namespace/repo.git
+    :param filterby
+    :return project id to given repo name
+    """
+    projects              = []
+    projects_alternative  = []
+    reponame_alternative  = reponame + ".git"
+    i = 1
+    while True:
+       page = self.git.getprojects(i, 100)
+       if page:
+         projects             += self.helper.filter_list_by_entry(reponame, page, filterby)
+         projects_alternative += self.helper.filter_list_by_entry(reponame_alternative, page, filterby)
+         i += 1
+       else:
+         break
+    return projects, projects_alternative
 
 class GitRepoClient(object):
   def __init__(self):
