@@ -186,6 +186,9 @@ class Helper(object):
     :param selection
     :param identity
     """
+    if not entries:
+      raise ValueError("Cannot get any entries from server please check access credentials")
+
     dictionary = {}
     for idx, entry in enumerate(entries):
       print "%i: %s" % (idx, entry[selection])
@@ -256,7 +259,7 @@ def main():
         sys.exit(e)
 
 def handler(signum, frame):
-    print "Exiting ..."
+    print "\nExiting ..."
     sys.exit(0)
 
 if __name__ == '__main__':
