@@ -1,6 +1,8 @@
 ## Intro
 
-Simple git extension to raise merge request on GitLab from command line.
+Simple git extension to interact with GitLab from command line.
+
+API: https://github.com/gitlabhq/gitlabhq/tree/master/doc/api
 
 ## Installation
 
