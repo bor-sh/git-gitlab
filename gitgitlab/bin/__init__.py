@@ -255,6 +255,28 @@ class Helper(object):
          break
     return pages
 
+  def get_filtered_pages_mergeid_lists(self, func, project_id, merge_id, filtername, filterby, *args, **kwargs):
+    """
+    # TODO duplicate of above think about simplification
+    Get filtered pages based on func call
+    :param project_id
+    :param merge_id
+    :param func        
+    :param filtername  
+    :param filterby
+    :return filtered pages
+    """
+    pages              = []
+    i = 1
+    while True:
+       page = func(project_id, merge_id, i, *args, **kwargs)
+       if page:
+         pages += self.filter_list_by_entry(filtername, page, filterby)
+         i += 1
+       else:
+         break
+    return pages
+
   def show_infos(self, info, title, *args):
     """
     Show infos based on argument collection
@@ -386,6 +408,54 @@ def shmr(current_state=('c', "opened", "Return all requests or just those that a
     #print json.dumps(merge_info, indent=4, sort_keys=True)
     for change in merge_info['changes']:
       helper.show_infos(change, "Changes for file - " + change['new_path'], "old_path", "diff")
+
+@command()
+def pocomr(note,
+           current_state=('c', "opened", "Return all requests or just those that are merged, opened or closed"),
+           filter_title=('f', "", "Filter merge request by title"),
+           reponame=('r', "", "repository name with namespace/repo.git or derived from remote settings if cloned"),
+           ):
+  """
+  Post note
+  note - note which should be posted
+  """
+
+  if not reponame:
+    reponame  = repo_client.get_reponame()
+
+  project_id  = gitlab_client.get_projects_id(reponame)
+
+  filterby   = "title"
+  merge_list = helper.get_filtered_pages_lists(gitlab_client.api().getmergerequests, project_id, filter_title, filterby, current_state)
+  merge_id   = helper.get_entry(merge_list, filterby)
+
+  if note:
+    gitlab_client.api().addcommenttomergerequest(project_id, merge_id, note)
+
+@command()
+def shcomr(current_state=('c', "opened", "Return all requests or just those that are merged, opened or closed"),
+           filter_title=('f', "", "Filter merge request by title"),
+           filter_note=('n', "", "Filter notes by pattern"),
+           reponame=('r', "", "repository name with namespace/repo.git or derived from remote settings if cloned"),
+           ):
+  """
+  Show merge request comments
+  """
+
+  if not reponame:
+    reponame  = repo_client.get_reponame()
+
+  project_id  = gitlab_client.get_projects_id(reponame)
+
+  filterby   = "title"
+  merge_list = helper.get_filtered_pages_lists(gitlab_client.api().getmergerequests, project_id, filter_title, filterby, current_state)
+  merge_id   = helper.get_entry(merge_list, filterby)
+
+  filterby   = "note"
+  merge_comments = helper.get_filtered_pages_mergeid_lists(gitlab_client.api().getmergerequestcomments, project_id, merge_id, filter_note, filterby)
+
+  for comment in merge_comments:
+      helper.show_infos(comment, "Comment by " + comment['author']['name'], "note")
 
 def main():
     signal.signal(signal.SIGINT, handler)
