@@ -36,13 +36,18 @@ git config gitlab.token "your-token"
 git gitlab -h
 ~~~
 
-### Merge request
+### Commands
 
-In general only a user name is enough. Everything else will be derived from repository itself.
-If a user name is found or similar to the provided input then we can select it from list.
+Merge request
 
 ~~~
 git gitlab mr -h
+# will be searched for some user and a selection is provided
+git gitlab mr usernamepattern
+~~~
 
-git gitlab mr username
+Update merge request
+
+~~~
+git gitlab upmr -h
 ~~~
