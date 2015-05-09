@@ -55,3 +55,6 @@ target/
 # Configs
 test.cfg
 server.yml
+
+*sublime-project
+*sublime-workspace

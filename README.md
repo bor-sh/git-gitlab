@@ -48,6 +48,12 @@ git gitlab mr -h
 git gitlab mr usernamepattern
 ~~~
 
+Show merge request infos
+
+~~~
+git gitlab shmr -h
+~~~
+
 Update merge request
 
 ~~~

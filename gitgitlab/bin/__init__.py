@@ -255,6 +255,22 @@ class Helper(object):
          break
     return pages
 
+  def show_infos(self, info, title, *args):
+    """
+    Show infos based on argument collection
+    :param title 
+    :param several different entries to show
+    """
+    try:
+      print "%s:" % title
+      for arg in args:
+        argument = arg
+        argument = argument[0].upper()+argument[1:]
+        print "-- %s: %s" % (str(argument), str(info[arg]))
+    except:
+      print "Error happend no entries found during show"
+      pass
+
 repo_client   = GitRepoClient()
 url           = repo_client.get_config_gitlab_url()
 token         = repo_client.get_config_gitlab_token()
@@ -295,7 +311,7 @@ def mr(assignee,
 def upmr(assignee=("a", "", "Assignee user ID"),
          current_state=('c', "opened", "Return all requests or just those that are merged, opened or closed"),
          description=('d', "", "description of the merge request"),
-         state_change=('e', "", "New state (close|reopen|merge) change [yes] everythin else will be ignored - merge will accept the request"),
+         state_change=('e', False, "New state (close|reopen|merge) change - merge will accept the request"),
          filter_title=('f', "", "Filter list by title"),
          into=('i', "master", "target branch"),
          commit_message=("m", "", "commit message if accepting merge request"),
@@ -323,7 +339,7 @@ def upmr(assignee=("a", "", "Assignee user ID"),
     data.update( {"assignee_id":assignee_id} )
   if description:
     data.update( {"description":description} )
-  if state_change == "yes":
+  if state_change:
     state_event = helper.get_state_event()
     data.update( {"state_event": state_event} )
   if into:
@@ -341,7 +357,36 @@ def upmr(assignee=("a", "", "Assignee user ID"),
       print "Merge was OK"
     else:
       print "Merge failed"
-      
+
+@command()
+def shmr(current_state=('c', "opened", "Return all requests or just those that are merged, opened or closed"),
+         filter_title=('f', "", "Filter list by title"),
+         reponame=('r', "", "repository name with namespace/repo.git or derived from remote settings if cloned"),
+         diffs=('d', False, "Show changes of merge request")
+         ):
+  """
+  Show merge request infos
+  """
+
+  if not reponame:
+    reponame  = repo_client.get_reponame()
+
+  project_id  = gitlab_client.get_projects_id(reponame)
+
+  filterby   = "title"
+  merge_list = helper.get_filtered_pages_lists(gitlab_client.api().getmergerequests, project_id, filter_title, filterby, current_state)
+  merge_id   = helper.get_entry(merge_list, filterby)
+
+  merge_info = gitlab_client.api().getmergerequestchanges(project_id, merge_id)
+  helper.show_infos(merge_info['author'], "Author infos" , "name")
+  helper.show_infos(merge_info['assignee'], "Assignee infos", "name")
+  helper.show_infos(merge_info, "Further infos", "title", "description", "state", "source_branch", "target_branch")
+
+  if diffs:
+    #print json.dumps(merge_info, indent=4, sort_keys=True)
+    for change in merge_info['changes']:
+      helper.show_infos(change, "Changes for file - " + change['new_path'], "old_path", "diff")
+
 def main():
     signal.signal(signal.SIGINT, handler)
     try:

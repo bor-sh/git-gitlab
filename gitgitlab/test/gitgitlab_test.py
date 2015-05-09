@@ -168,5 +168,14 @@ class TestGitlabClient(unittest.TestCase):
         with mock.patch('__builtin__.raw_input', return_value='3'):
             self.assertRaises(ValueError)
 
+    def test_show_info(self):
+        # not really a test maybe a print test later
+        print "Test show infos dummy"
+        entry = {
+            "id": 4,
+            "http_url_to_repo": "http://example.com/diaspora/diaspora-client.git",
+          }
+        self.help.show_infos(entry, "List", "id", "http_url_to_repo")
+
 if __name__ == '__main__':
     unittest.main()
