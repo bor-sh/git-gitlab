@@ -2,19 +2,16 @@
 
 Simple git extension to interact with GitLab from command line.
 
-API: https://github.com/gitlabhq/gitlabhq/tree/master/doc/api
+API: https://gitlab.com/gitlab-org/gitlab-ce/tree/master/doc/api
 
-## Installation
+### Prerequisite
+
+Libsaas package and gitlab extension see:
+https://gitlab.com/bor-sh-infrastructure/libsaas_gitlab/tree/master#README
+
+### Installation if prerequisites are met
 
 ~~~
-sudo python setup.sh install
-~~~
-
-Lates pyapi-gitlab is required: https://github.com/Itxaka/pyapi-gitlab
-
-Probably it needs to be installed manually:
-~~~
-git clone https://github.com/Itxaka/pyapi-gitlab.git
 sudo python setup.sh install
 ~~~
 
@@ -38,24 +35,18 @@ git config gitlab.token "your-token"
 git gitlab -h
 ~~~
 
-### Commands
+For each command get help by git gitlab command -h
+and further infos what needs to be done is provided.
 
-Merge request
-
-~~~
-git gitlab mr -h
-# will be searched for some user and a selection is provided
-git gitlab mr usernamepattern
-~~~
-
-Show merge request infos
+For example creating merge request.
+If you are on the repository cloned and tracked on any gitlab server
+referenced as remote.
 
 ~~~
-git gitlab shmr -h
+git gitlab mr
 ~~~
 
-Update merge request
+All parameters are optional source, target branch and title 
+if not provided will be derived from repository and current 
+branch itself.
 
-~~~
-git gitlab upmr -h
-~~~
