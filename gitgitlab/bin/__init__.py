@@ -206,6 +206,20 @@ class Helper(object):
     except:
       raise ValueError("Wrong selection")
 
+  def get_current_state_event(self):
+    events = [
+        {
+          "event": "opened",
+        },
+        {
+          "event": "closed",
+        },
+        {
+          "event": "merged",
+        }
+        ]
+    return self.get_entry(events, "event", "event")
+
   def get_state_event(self):
     # actually seems like "merge" does not have any effect
     # will use it to trigger the merge request
@@ -331,7 +345,7 @@ def mr(assignee,
 
 @command()
 def upmr(assignee=("a", "", "Assignee user ID"),
-         current_state=('c', "opened", "Return all requests or just those that are merged, opened or closed"),
+         current_state=('c', False, "Return all requests or just those that are merged, opened or closed"),
          description=('d', "", "description of the merge request"),
          state_change=('e', False, "New state (close|reopen|merge) change - merge will accept the request"),
          filter_title=('f', "", "Filter list by title"),
@@ -345,13 +359,16 @@ def upmr(assignee=("a", "", "Assignee user ID"),
   Update merge request
   """
 
+  if current_state:
+    current_state = helper.get_current_state_event()
+
   if not reponame:
     reponame  = repo_client.get_reponame()
 
   project_id  = gitlab_client.get_projects_id(reponame)
 
   filterby   = "title"
-  merge_list = helper.get_filtered_pages_lists(gitlab_client.api().getmergerequests, project_id, filter_title, filterby, current_state)
+  merge_list = helper.get_filtered_pages_lists(gitlab_client.api().getmergerequests, project_id, filter_title, filterby, 100, current_state)
   merge_id   = helper.get_entry(merge_list, filterby)
 
   data = {}
@@ -381,7 +398,7 @@ def upmr(assignee=("a", "", "Assignee user ID"),
       print "Merge failed"
 
 @command()
-def shmr(current_state=('c', "opened", "Return all requests or just those that are merged, opened or closed"),
+def shmr(current_state=('c', False, "Return all requests or just those that are merged, opened or closed"),
          filter_title=('f', "", "Filter list by title"),
          reponame=('r', "", "repository name with namespace/repo.git or derived from remote settings if cloned"),
          diffs=('d', False, "Show changes of merge request")
@@ -390,13 +407,16 @@ def shmr(current_state=('c', "opened", "Return all requests or just those that a
   Show merge request infos
   """
 
+  if current_state:
+    current_state = helper.get_current_state_event()
+
   if not reponame:
     reponame  = repo_client.get_reponame()
 
   project_id  = gitlab_client.get_projects_id(reponame)
 
   filterby   = "title"
-  merge_list = helper.get_filtered_pages_lists(gitlab_client.api().getmergerequests, project_id, filter_title, filterby, current_state)
+  merge_list = helper.get_filtered_pages_lists(gitlab_client.api().getmergerequests, project_id, filter_title, filterby, 100, current_state)
   merge_id   = helper.get_entry(merge_list, filterby)
 
   merge_info = gitlab_client.api().getmergerequestchanges(project_id, merge_id)
@@ -411,7 +431,7 @@ def shmr(current_state=('c', "opened", "Return all requests or just those that a
 
 @command()
 def pocomr(note,
-           current_state=('c', "opened", "Return all requests or just those that are merged, opened or closed"),
+           current_state=('c', False, "Return all requests or just those that are merged, opened or closed"),
            filter_title=('f', "", "Filter merge request by title"),
            reponame=('r', "", "repository name with namespace/repo.git or derived from remote settings if cloned"),
            ):
@@ -420,20 +440,23 @@ def pocomr(note,
   note - note which should be posted
   """
 
+  if current_state:
+    current_state = helper.get_current_state_event()
+
   if not reponame:
     reponame  = repo_client.get_reponame()
 
   project_id  = gitlab_client.get_projects_id(reponame)
 
   filterby   = "title"
-  merge_list = helper.get_filtered_pages_lists(gitlab_client.api().getmergerequests, project_id, filter_title, filterby, current_state)
+  merge_list = helper.get_filtered_pages_lists(gitlab_client.api().getmergerequests, project_id, filter_title, filterby, 100, current_state)
   merge_id   = helper.get_entry(merge_list, filterby)
 
   if note:
     gitlab_client.api().addcommenttomergerequest(project_id, merge_id, note)
 
 @command()
-def shcomr(current_state=('c', "opened", "Return all requests or just those that are merged, opened or closed"),
+def shcomr(current_state=('c', False, "Return all requests or just those that are merged, opened or closed"),
            filter_title=('f', "", "Filter merge request by title"),
            filter_note=('n', "", "Filter notes by pattern"),
            reponame=('r', "", "repository name with namespace/repo.git or derived from remote settings if cloned"),
@@ -442,13 +465,16 @@ def shcomr(current_state=('c', "opened", "Return all requests or just those that
   Show merge request comments
   """
 
+  if current_state:
+    current_state = helper.get_current_state_event()
+
   if not reponame:
     reponame  = repo_client.get_reponame()
 
   project_id  = gitlab_client.get_projects_id(reponame)
 
   filterby   = "title"
-  merge_list = helper.get_filtered_pages_lists(gitlab_client.api().getmergerequests, project_id, filter_title, filterby, current_state)
+  merge_list = helper.get_filtered_pages_lists(gitlab_client.api().getmergerequests, project_id, filter_title, filterby, 100, current_state)
   merge_id   = helper.get_entry(merge_list, filterby)
 
   filterby   = "note"
