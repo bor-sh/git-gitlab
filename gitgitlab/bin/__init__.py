@@ -190,7 +190,7 @@ class Helper(object):
     :param identity
     """
     if not entries:
-      raise ValueError("Cannot get any entries from server please check access credentials")
+      raise ValueError("No entries found")
 
     dictionary = {}
     for idx, entry in enumerate(entries):
