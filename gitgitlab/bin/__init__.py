@@ -49,6 +49,10 @@ class GitlabClient(object):
     res = self.git.createmergerequest(project_id, source, target, title, target_project_id, int(assignee_id), description)
     if res:
       print "Merge request created"
+      self.helper.show_infos(res['author'], "Author infos" , "name")
+      self.helper.show_infos(res['assignee'], "Assignee infos", "name")
+      self.helper.show_infos(res, "Merge ID", "iid")
+      self.helper.show_infos(res, "Further infos", "title", "description", "state", "source_branch", "target_branch" )
     else:
       print "Merge request seems to be already present"
 
@@ -304,7 +308,7 @@ class Helper(object):
         argument = argument[0].upper()+argument[1:]
         print "-- %s: %s" % (str(argument), str(info[arg]))
     except:
-      print "Error happend no entries found during show"
+      print "No infos are set"
       pass
 
 repo_client   = GitRepoClient()
