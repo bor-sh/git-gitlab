@@ -13,9 +13,12 @@ sudo python setup.sh install
 Lates pyapi-gitlab is required: https://github.com/Itxaka/pyapi-gitlab
 
 Probably it needs to be installed manually:
+For update of description waiting for PR https://github.com/Itxaka/pyapi-gitlab/pull/141
+It is also possible to install from this branch
+
 ~~~
 git clone https://github.com/Itxaka/pyapi-gitlab.git
-sudo python setup.sh install
+sudo python setup.py install
 ~~~
 
 ## Configuration
