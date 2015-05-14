@@ -151,12 +151,6 @@ class TestGitlabClient(unittest.TestCase):
         text = apicall(test_func, "fsk", "lks", "slkdfj", test="lkjsf")
         self.assertEquals(text, "fsk lks slkdfj lkjsf")
 
-    def test_get_filtered_pages_lists(self):
-        print "Test get_filtered_pages_lists"
-        i = [1]
-        pages = self.help.get_filtered_pages_lists(pages_func, 1, "puppet", "http_url_to_repo", i)
-        self.assertEquals(pages[0]['id'], 6)
-
     def test_get_state_event(self):
         print "Test get state event"
         with mock.patch('__builtin__.raw_input', return_value='0'):

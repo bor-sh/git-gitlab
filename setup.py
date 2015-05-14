@@ -2,7 +2,7 @@
 import gitgitlab
 from setuptools import setup, find_packages
 
-install_requires = ['GitPython>=1.0.1', 'argparse', 'opster==4.1', 'pyapi-gitlab']
+install_requires = ['GitPython>=1.0.1', 'argparse', 'opster==4.1', 'libsaas==0.4']
 
 setup(
     name="git-gitlab",
