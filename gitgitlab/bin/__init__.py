@@ -245,7 +245,7 @@ class Helper(object):
     return self.get_entry(projects, filterby)
 
   def get_user_id(self, name):
-    result = service.users().get(name,1,100)
+    result = service.users().get({ 'search':name, 'page':1, 'per_page':100 })
     return self.get_entry(result, 'username')
 
   def __get_filtered_project_lists(self, reponame, filterby = 'http_url_to_repo'):
