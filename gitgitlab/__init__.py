@@ -2,7 +2,7 @@
 git-gitlab 
 """
 
-VERSION = (0, 4, 0, 'dev')
+VERSION = (0, 4, 1, 'dev')
 
 __version__ = ".".join(map(str, VERSION[0:3])) + "".join(VERSION[3:])
 __author__ = "b-sh"

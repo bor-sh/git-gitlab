@@ -278,8 +278,8 @@ except Exception, e:
   raise ValueError("Gitlab could not be initialized - check connection or configuration")
 helper        = Helper()
 
-@command()
-def mr(assignee=("a", "", "Assignee user ID"),
+@command(usage='[-a NAME_PATTERN] [-t TITLE] [-s SOURCE_BRANCH] [-i TARGET_BRANCH] [-r REPOSITORY] [-f FORKED_REPO_NAME] [-d DESCRIPTION]')
+def mr(assignee=("a", "", "search for user name pattern"),
        title=("t", "", "title provided or derived from branch name"), 
        source=("s",  "", "branch to merge provided or current active branch is taken"), 
        reponame=('r', "", "repository name with namespace/repo.git or derived from remote settings if cloned"), 
@@ -331,14 +331,14 @@ def mr(assignee=("a", "", "Assignee user ID"),
   else:
     print "Merge request seems to be already present"
 
-@command()
-def upmr(assignee=("a", "", "Assignee user ID"),
+@command(usage='[-a NAME_PATTERN] [-c] [-d DESCRIPTION] [-e] [-f FILTER_TITLE_PATTERN] [-s SOURCE_BRANCH] [-i TARGET_BRANCH] [-m MESSAGE] [-r REPOSITORY] [-t TITLE]')
+def upmr(assignee=("a", "", "search for user name pattern"),
          current_state=('c', False, "Return all requests or just those that are merged, opened or closed"),
          description=('d', "", "description of the merge request"),
          state_change=('e', False, "New state (close|reopen|merge) change - merge will accept the request"),
          filter_title=('f', "", "Filter list by title"),
-         into=('i', "master", "target branch"),
-         commit_message=("m", "", "commit message if accepting merge request"),
+         into=('i', "", "target branch"),
+         commit_message=("m", "", "alternative commit message if accepting merge request"),
          reponame=('r', "", "repository name with namespace/repo.git or derived from remote settings if cloned"),
          source=("s",  "", "branch to merge provided or current active branch is taken"),
          title=("t", "", "title update"),
@@ -384,7 +384,7 @@ def upmr(assignee=("a", "", "Assignee user ID"),
     else:
       print "Merge failed"
 
-@command()
+@command(usage='[-c] [-f FILTER_TITLE_PATTERN] [-r REPOSITORY] [-d]')
 def shmr(current_state=('c', False, "Return all requests or just those that are merged, opened or closed"),
          filter_title=('f', "", "Filter list by title"),
          reponame=('r', "", "repository name with namespace/repo.git or derived from remote settings if cloned"),
@@ -414,7 +414,7 @@ def shmr(current_state=('c', False, "Return all requests or just those that are 
     for change in merge_info['changes']:
       helper.show_infos(change, "Changes for file - " + change['new_path'], "old_path", "diff")
 
-@command()
+@command(usage='NOTE_MESSAGE [-c] [-f FILTER_TITLE_PATTERN] [-r REPOSITORY]')
 def pocomr(note,
            current_state=('c', False, "Return all requests or just those that are merged, opened or closed"),
            filter_title=('f', "", "Filter merge request by title"),
@@ -441,7 +441,7 @@ def pocomr(note,
     data['note'] = note
     service.project(project_id).merge_request(merge_id).comments().create(data)
 
-@command()
+@command(usage='[-c] [-f FILTER_TITLE_PATTERN] [-n FILTER_NOTE_PATTERN] [-r REPOSITORY]')
 def shcomr(current_state=('c', False, "Return all requests or just those that are merged, opened or closed"),
            filter_title=('f', "", "Filter merge request by title"),
            filter_note=('n', "", "Filter notes by pattern"),
