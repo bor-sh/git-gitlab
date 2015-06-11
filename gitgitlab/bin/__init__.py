@@ -331,11 +331,11 @@ def mr(assignee=("a", "", "search for user name pattern"),
   else:
     print "Merge request seems to be already present"
 
-@command(usage='[-a NAME_PATTERN] [-c] [-d DESCRIPTION] [-e] [-f FILTER_TITLE_PATTERN] [-s SOURCE_BRANCH] [-i TARGET_BRANCH] [-m MESSAGE] [-r REPOSITORY] [-t TITLE]')
+@command(usage='[-a NAME_PATTERN] [-c [STATE]] [-d DESCRIPTION] [-e [STATE]] [-f FILTER_TITLE_PATTERN] [-s SOURCE_BRANCH] [-i TARGET_BRANCH] [-m MESSAGE] [-r REPOSITORY] [-t TITLE]')
 def upmr(assignee=("a", "", "search for user name pattern"),
-         current_state=('c', False, "Return all requests or just those that are merged, opened or closed"),
+         current_state=('c', "opened", "Return all requests or just those that are merged, opened or closed"),
          description=('d', "", "description of the merge request"),
-         state_change=('e', False, "New state (close|reopen|merge) change - merge will accept the request"),
+         state_change=('e', "", "New state (close|reopen|merge) change - merge will accept the request"),
          filter_title=('f', "", "Filter list by title"),
          into=('i', "", "target branch"),
          commit_message=("m", "", "alternative commit message if accepting merge request"),
@@ -347,7 +347,8 @@ def upmr(assignee=("a", "", "search for user name pattern"),
   Update merge request
   """
 
-  current_state = "opened" if not current_state else helper.get_current_state()
+  current_states = ['opened', 'closed', 'merged']
+  current_state = current_state if current_state in current_states else helper.get_current_state()
 
   if not reponame:
     reponame  = repo_client.get_reponame()
@@ -366,8 +367,10 @@ def upmr(assignee=("a", "", "search for user name pattern"),
   if description:
     data.update( {"description":description} )
   if state_change:
-    state_event = helper.get_state_event()
-    data.update( {"state_event": state_event} )
+    states = ['close', 'reopen', 'merge']
+    if state_change not in states:
+      state_change = helper.get_state_event()
+    data.update( {"state_event": state_change} )
   if into:
     data.update( {"target_branch":into} )
   if source:
@@ -384,8 +387,8 @@ def upmr(assignee=("a", "", "search for user name pattern"),
     else:
       print "Merge failed"
 
-@command(usage='[-c] [-f FILTER_TITLE_PATTERN] [-r REPOSITORY] [-d]')
-def shmr(current_state=('c', False, "Return all requests or just those that are merged, opened or closed"),
+@command(usage='[-c [STATE]] [-f FILTER_TITLE_PATTERN] [-r REPOSITORY] [-d]')
+def shmr(current_state=('c', "opened", "Return all requests or just those that are merged, opened or closed"),
          filter_title=('f', "", "Filter list by title"),
          reponame=('r', "", "repository name with namespace/repo.git or derived from remote settings if cloned"),
          diffs=('d', False, "Show changes of merge request")
@@ -394,7 +397,8 @@ def shmr(current_state=('c', False, "Return all requests or just those that are 
   Show merge request infos
   """
 
-  current_state = "opened" if not current_state else helper.get_current_state()
+  current_states = ['opened', 'closed', 'merged']
+  current_state = current_state if current_state in current_states else helper.get_current_state()
 
   if not reponame:
     reponame  = repo_client.get_reponame()
@@ -414,9 +418,9 @@ def shmr(current_state=('c', False, "Return all requests or just those that are 
     for change in merge_info['changes']:
       helper.show_infos(change, "Changes for file - " + change['new_path'], "old_path", "diff")
 
-@command(usage='NOTE_MESSAGE [-c] [-f FILTER_TITLE_PATTERN] [-r REPOSITORY]')
+@command(usage='NOTE_MESSAGE [-c [STATE]] [-f FILTER_TITLE_PATTERN] [-r REPOSITORY]')
 def pocomr(note,
-           current_state=('c', False, "Return all requests or just those that are merged, opened or closed"),
+           current_state=('c', "opened", "Return all requests or just those that are merged, opened or closed"),
            filter_title=('f', "", "Filter merge request by title"),
            reponame=('r', "", "repository name with namespace/repo.git or derived from remote settings if cloned"),
            ):
@@ -425,7 +429,8 @@ def pocomr(note,
   note - note which should be posted
   """
 
-  current_state = "opened" if not current_state else helper.get_current_state()
+  current_states = ['opened', 'closed', 'merged']
+  current_state = current_state if current_state in current_states else helper.get_current_state()
 
   data = {}
   if not reponame:
@@ -441,8 +446,8 @@ def pocomr(note,
     data['note'] = note
     service.project(project_id).merge_request(merge_id).comments().create(data)
 
-@command(usage='[-c] [-f FILTER_TITLE_PATTERN] [-n FILTER_NOTE_PATTERN] [-r REPOSITORY]')
-def shcomr(current_state=('c', False, "Return all requests or just those that are merged, opened or closed"),
+@command(usage='[-c [STATE]] [-f FILTER_TITLE_PATTERN] [-n FILTER_NOTE_PATTERN] [-r REPOSITORY]')
+def shcomr(current_state=('c', "opened", "Return all requests or just those that are merged, opened or closed"),
            filter_title=('f', "", "Filter merge request by title"),
            filter_note=('n', "", "Filter notes by pattern"),
            reponame=('r', "", "repository name with namespace/repo.git or derived from remote settings if cloned"),
@@ -451,7 +456,8 @@ def shcomr(current_state=('c', False, "Return all requests or just those that ar
   Show merge request comments
   """
 
-  current_state = "opened" if not current_state else helper.get_current_state()
+  current_states = ['opened', 'closed', 'merged']
+  current_state = current_state if current_state in current_states else helper.get_current_state()
 
   if not reponame:
     reponame  = repo_client.get_reponame()
