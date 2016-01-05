@@ -221,11 +221,11 @@ class Helper(object):
     :param several different entries to show
     """
     try:
-      print "%s:" % title
+      print "%s:" % title.encode('utf-8')
       for arg in args:
         argument = arg
         argument = argument[0].upper()+argument[1:]
-        print "-- %s: %s" % (str(argument), str(info[arg]))
+        print "-- %s: %s" % (str(argument.encode('utf-8')), str(info[arg].encode('utf-8')))
     except:
       print "-- not set"
       pass
