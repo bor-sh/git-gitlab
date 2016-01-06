@@ -360,7 +360,6 @@ def upmr(assignee=("a", "", "search for user name pattern"),
   merge_id   = helper.get_entry(merge_list, filterby)
 
   data = {}
-  state_event = None
   if assignee:
     assignee_id   = helper.get_user_id(assignee)
     data.update( {"assignee_id":assignee_id} )
@@ -380,7 +379,7 @@ def upmr(assignee=("a", "", "search for user name pattern"),
 
   service.project(project_id).merge_request(merge_id).update(data)
 
-  if state_event == "merge":
+  if state_change == "merge":
     result = service.project(project_id).merge_request(merge_id).accept(commit_message)
     if result:
       print "Merge was OK"
