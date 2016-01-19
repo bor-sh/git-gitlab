@@ -380,7 +380,7 @@ def upmr(assignee=("a", "", "search for user name pattern"),
   service.project(project_id).merge_request(merge_id).update(data)
 
   if state_change == "merge":
-    result = service.project(project_id).merge_request(merge_id).accept(commit_message)
+    result = service.project(project_id).merge_request(merge_id).accept({ 'merge_commit_message' : commit_message })
     if result:
       print "Merge was OK"
     else:
