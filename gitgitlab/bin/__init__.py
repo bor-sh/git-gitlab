@@ -221,11 +221,11 @@ class Helper(object):
     :param several different entries to show
     """
     try:
-      print "%s:" % title
+      print "%s:" % title.encode('utf-8')
       for arg in args:
         argument = arg
         argument = argument[0].upper()+argument[1:]
-        print "-- %s: %s" % (str(argument), str(info[arg]))
+        print "-- %s: %s" % (str(argument.encode('utf-8')), str(info[arg].encode('utf-8')))
     except:
       print "-- not set"
       pass
@@ -360,7 +360,6 @@ def upmr(assignee=("a", "", "search for user name pattern"),
   merge_id   = helper.get_entry(merge_list, filterby)
 
   data = {}
-  state_event = None
   if assignee:
     assignee_id   = helper.get_user_id(assignee)
     data.update( {"assignee_id":assignee_id} )
@@ -380,8 +379,8 @@ def upmr(assignee=("a", "", "search for user name pattern"),
 
   service.project(project_id).merge_request(merge_id).update(data)
 
-  if state_event == "merge":
-    result = service.project(project_id).merge_request(merge_id).accept(commit_message)
+  if state_change == "merge":
+    result = service.project(project_id).merge_request(merge_id).accept({ 'merge_commit_message' : commit_message })
     if result:
       print "Merge was OK"
     else:
