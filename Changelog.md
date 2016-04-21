@@ -1,3 +1,9 @@
+## v0.5
+
+* Allow state as input closes #5
+* Add usage and fixup update merge request unnecessary default branch closes #5
+* Fixing non-latin-1 character printing in comments and usernames
+
 ## v0.4.1
 
 * add usage info
