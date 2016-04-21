@@ -32,7 +32,7 @@ git config gitlab.token "your-token"
 ### All commands
 
 ~~~
-git gitlab -h
+git lab -h
 ~~~
 
 For each command get help by git gitlab command -h
@@ -43,7 +43,7 @@ If you are on the repository cloned and tracked on any gitlab server
 referenced as remote.
 
 ~~~
-git gitlab mr
+git lab mr
 ~~~
 
 All parameters are optional source, target branch and title 

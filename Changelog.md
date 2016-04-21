@@ -1,3 +1,7 @@
+## v0.6
+
+* rename git-gitlab to git-lab
+
 ## v0.5
 
 * Allow state as input closes #5

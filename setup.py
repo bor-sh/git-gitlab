@@ -5,8 +5,8 @@ from setuptools import setup, find_packages
 install_requires = ['GitPython>=1.0.1', 'argparse', 'opster==4.1', 'libsaas==0.4']
 
 setup(
-    name="git-gitlab",
-    scripts=['bin/git-gitlab'],
+    name="git-lab",
+    scripts=['bin/git-lab'],
     version=gitgitlab.__version__,
     description="Git extensions",
     author=gitgitlab.__author__,
